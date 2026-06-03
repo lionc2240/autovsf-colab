@@ -24,11 +24,11 @@ cd "$LIBS_DIR"
 
 # Danh sách các thư viện thiếu hụt trên Ubuntu 22.04
 declare -A DEBS=(
-    ["libaom0"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/a/aom/libaom0_1.0.0.errata1-3+deb11u1ubuntu0.1_amd64.deb"
+    ["libaom0"]="https://archive.ubuntu.com/ubuntu/pool/universe/a/aom/libaom0_1.0.0.errata1-3build1_amd64.deb"
     ["libvpx6"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/libv/libvpx/libvpx6_1.8.2-1ubuntu0.4_amd64.deb"
-    ["libx264-155"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/x/x264/libx264-155_0.155.2917+git0a84d98-2_amd64.deb"
-    ["libx265-179"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/x/x265/libx265-179_3.2.1-1build1_amd64.deb"
-    ["libflite1"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/f/flite/libflite1_2.1-release-3_amd64.deb"
+    ["libx264-155"]="https://old-releases.ubuntu.com/ubuntu/pool/universe/x/x264/libx264-155_0.155.2917+git0a84d98-2_amd64.deb"
+    ["libx265-179"]="http://ftp.ubuntu.com/ubuntu/ubuntu/pool/universe/x/x265/libx265-179_3.2.1-1build1_amd64.deb"
+    ["libflite1"]="https://old-releases.ubuntu.com/ubuntu/pool/universe/f/flite/libflite1_2.1-release-3_amd64.deb"
     ["libwavpack1"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/w/wavpack/libwavpack1_5.2.0-1ubuntu0.1_amd64.deb"
 )
 
