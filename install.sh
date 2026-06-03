@@ -15,7 +15,7 @@ echo "📂 Thư mục làm việc: $REPO_DIR"
 
 echo "🚀 [1/4] Cài đặt công cụ hệ thống (Bắt buộc mỗi lần chạy)..."
 sudo apt-get update -y || true
-sudo apt-get install -y xvfb libxss1 libnss3 ffmpeg libxtst6 libxrender1 libxcomposite1 libasound2 libdbus-glib-1-2 libnuma1
+sudo apt-get install -y xvfb libxss1 libnss3 ffmpeg libxtst6 libxrender1 libxcomposite1 libasound2 libdbus-glib-1-2 libnuma1 libgtk-3-0
 
 # Xử lý thư viện cũ (VSF build cho Ubuntu 20.04 cần các bản lib cũ hơn)
 echo "🚀 [2/4] Kiểm tra và vá lỗi thư viện cũ (Legacy Libs)..."
@@ -30,6 +30,8 @@ declare -A DEBS=(
     ["libx265-179"]="http://ftp.ubuntu.com/ubuntu/ubuntu/pool/universe/x/x265/libx265-179_3.2.1-1build1_amd64.deb"
     ["libflite1"]="https://old-releases.ubuntu.com/ubuntu/pool/universe/f/flite/libflite1_2.1-release-3_amd64.deb"
     ["libwavpack1"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/w/wavpack/libwavpack1_5.2.0-1ubuntu0.1_amd64.deb"
+    ["libwebp6"]="http://security.ubuntu.com/ubuntu/pool/main/libw/libwebp/libwebp6_0.6.1-2ubuntu0.20.04.3_amd64.deb"
+    ["libcodec2-0.9"]="http://security.ubuntu.com/ubuntu/pool/universe/c/codec2/libcodec2-0.9_0.9.2-2_amd64.deb"
 )
 
 for pkg in "${!DEBS[@]}"; do
