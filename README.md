@@ -1,24 +1,26 @@
-# AutoVSF - Phiên bản Google Colab
+# AutoVSF - Google Colab Edition
 
-Công cụ trích xuất phụ đề cứng (Hardsub) tự động thông qua VideoSubFinder và Google Drive OCR. Phiên bản này được tối ưu hóa đặc biệt để chạy bền vững trên Google Drive.
+> 🌐 **[Tiếng Việt](docs/VIE_README.md)**
 
-🔗 **Phiên bản chính (Codespaces):** [https://github.com/lionc2240/autovsf-codespaces](https://github.com/lionc2240/autovsf-codespaces)
+Automated hard subtitle (hardsub) extraction tool using VideoSubFinder and Google Drive OCR. This edition is specifically optimized to run persistently on Google Drive.
+
+🔗 **Main Edition (Codespaces):** [https://github.com/lionc2240/autovsf-codespaces](https://github.com/lionc2240/autovsf-codespaces)
 
 ---
 
-## 🚀 Hướng dẫn sử dụng nhanh
+## 🚀 Quick Start
 
-1. **Mở file Notebook:** Mở `AutoVSF_Colab_Edition.ipynb` bằng Google Colab.
-2. **Mount Drive:** Chạy Cell đầu tiên để kết nối với Google Drive.
-3. **Cấu hình:** Tải file `credentials.json` của bạn lên thư mục `AutoVSF/autovsf-colab/` trên Drive.
-4. **Chạy Setup:** Chạy Cell cài đặt. Script sẽ tự động vá lỗi thư viện cho Ubuntu 22.04.
-5. **Trích xuất:** Nhập đường dẫn video và bắt đầu chạy.
+1. **Open the Notebook:** Open `AutoVSF_Colab_Edition.ipynb` with Google Colab.
+2. **Mount Drive:** Run the first cell to connect to your Google Drive.
+3. **Configure:** Upload your `credentials.json` file to the `AutoVSF/autovsf-colab/` folder on Drive.
+4. **Run Setup:** Execute the setup cell. The script will automatically fix library compatibility issues for Ubuntu 22.04.
+5. **Extract:** Enter the video path and start processing.
 
-## 🌟 Ưu điểm của bản Colab
-- **Không mất dữ liệu:** Toàn bộ tool và kết quả được lưu trên Drive.
-- **Tiết kiệm thời gian:** Chỉ tải VideoSubFinder một lần duy nhất.
-- **Tự động vá lỗi:** Xử lý triệt để các thư viện thiếu hụt trên môi trường Colab mới.
+## 🌟 Colab Edition Advantages
+- **No data loss:** The entire tool and all results are saved on Drive.
+- **Time-saving:** VideoSubFinder is downloaded only once.
+- **Auto-fix:** Comprehensive handling of missing libraries on fresh Colab environments.
 
-## ⚠️ Lưu ý
-- Luôn giữ file `credentials.json` bảo mật.
-- Sau khi chạy xong, hãy dọn dẹp thư mục ảnh tạm để tránh đầy dung lượng Drive.
+## ⚠️ Notes
+- Always keep your `credentials.json` file secure.
+- After processing, clean up temporary image folders to avoid filling up your Drive quota.
