@@ -22,3 +22,6 @@ Công cụ trích xuất phụ đề cứng (Hardsub) tự động thông qua Vi
 ## ⚠️ Lưu ý
 - Luôn giữ file `credentials.json` bảo mật.
 - Sau khi chạy xong, hãy dọn dẹp thư mục ảnh tạm để tránh đầy dung lượng Drive.
+
+## 📚 Tài liệu
+- [Giải thích chi tiết install.sh](VIE_install-explanation.md)

@@ -1,122 +1,122 @@
-# Giải thích file `install.sh`
+# `install.sh` Explanation
 
-## Tổng quan
+## Overview
 
-File `install.sh` là script cài đặt tự động dành riêng cho môi trường **Google Colab** (Ubuntu 22.04 Jammy). Nó thực hiện 4 bước chính để chuẩn bị môi trường chạy VideoSubFinder.
+`install.sh` is an automated setup script designed specifically for **Google Colab** (Ubuntu 22.04 Jammy). It performs 4 main steps to prepare the environment for running VideoSubFinder.
 
-## Kiến trúc thư mục
+## Directory Structure
 
-Trước khi đi vào chi tiết, cần hiểu cấu trúc thư mục mà script giả định:
+Before diving into details, here is the directory structure the script assumes:
 
 ```
 /content/drive/MyDrive/AutoVSF/          # PARENT_DIR
 ├── VideoSubFinder/                      # VSF_DIR
-│   ├── VideoSubFinderWXW               # Binary chính
+│   ├── VideoSubFinderWXW               # Main binary
 │   ├── VideoSubFinderWXW.run           # Wrapper script
-│   └── legacy_libs/                    # Thư viện cũ (vá lỗi)
-└── autovsf-colab/                       # REPO_DIR (thư mục hiện tại)
+│   └── legacy_libs/                    # Legacy libraries (compatibility fix)
+└── autovsf-colab/                       # REPO_DIR (current directory)
     ├── install.sh
     ├── headless.py
     ├── ocr.py
     └── config.py
 ```
 
-`REPO_DIR` là thư mục chứa code (`autovsf-colab`), `PARENT_DIR` là thư mục cha (`AutoVSF`), và `VSF_DIR` là thư mục chứa binary VideoSubFinder (`VideoSubFinder`).
+`REPO_DIR` is the code directory (`autovsf-colab`), `PARENT_DIR` is the parent directory (`AutoVSF`), and `VSF_DIR` is the VideoSubFinder binary directory (`VideoSubFinder`).
 
 ---
 
-## Bước 1: Cài đặt công cụ hệ thống (dòng 17-18)
+## Step 1: Install system tools (lines 17-18)
 
 ```bash
 sudo apt-get update -y || true
 sudo apt-get install -y xvfb libxss1 libnss3 ffmpeg libxtst6 ...
 ```
 
-### Mục đích
+### Purpose
 
-Cài đặt các gói hệ thống cần thiết để chạy VideoSubFinder, một ứng dụng GUI (WXWidgets) trên môi trường không có màn hình (headless) như Colab.
+Installs necessary system packages to run VideoSubFinder, a GUI application (WXWidgets) on a headless environment like Colab.
 
-### Các gói quan trọng
+### Key packages
 
-| Gói | Vai trò |
-|------|---------|
-| `xvfb` | **X Virtual Framebuffer** — giả lập màn hình ảo để chạy ứng dụng GUI trên server không có màn hình |
-| `ffmpeg` | Xử lý video, giải mã các định dạng đầu vào |
-| `libxss1`, `libnss3`, `libgtk-3-0` | Thư viện GTK/WX cần thiết cho VideoSubFinder (dựng trên WXWidgets) |
-| `libxtst6`, `libxrender1`, `libxcomposite1` | Thư viện X11 phụ trợ cho việc render cửa sổ ảo |
+| Package | Role |
+|---------|------|
+| `xvfb` | **X Virtual Framebuffer** — emulates a virtual display to run GUI apps on a headless server |
+| `ffmpeg` | Video processing, decoding various input formats |
+| `libxss1`, `libnss3`, `libgtk-3-0` | GTK/WX libraries required by VideoSubFinder (built on WXWidgets) |
+| `libxtst6`, `libxrender1`, `libxcomposite1` | X11 support libraries for virtual window rendering |
 
-### Tại sao phải chạy lại mỗi lần?
+### Why run every time?
 
-Dòng comment `Bắt buộc mỗi lần chạy` là đúng. Trên Google Colab, mỗi runtime session là một VM mới, nên các gói hệ thống không tồn tại qua các phiên làm việc.
+The comment `Required every run` is correct. On Google Colab, each runtime session is a new VM, so system packages do not persist across sessions.
 
 ---
 
-## Bước 2: Vá lỗi thư viện cũ — Legacy Libs (dòng 21-48)
+## Step 2: Legacy library compatibility fix (lines 21-48)
 
-### Vấn đề
+### Problem
 
-VideoSubFinder được build trên **Ubuntu 20.04**, sử dụng các phiên bản thư viện cũ. Google Colab dùng **Ubuntu 22.04** có các thư viện mới hơn, không tương thích ngược. Script không thể cài các thư viện cũ qua `apt-get` vì Ubuntu 22.04 không còn hỗ trợ các gói đó trong repository chính thức.
+VideoSubFinder was built on **Ubuntu 20.04**, using older library versions. Google Colab runs **Ubuntu 22.04** with newer libraries that are not backward compatible. The script cannot install older libraries via `apt-get` because Ubuntu 22.04 no longer supports those packages in its official repository.
 
-### Giải pháp
+### Solution
 
-Script tải trực tiếp các file `.deb` từ Ubuntu 20.04 archives (old-releases, security, azure mirror), giải nén chúng, và chỉ lấy các file `.so*` (shared object / thư viện động). Các file này được đặt vào thư mục `legacy_libs/` và sẽ được nạp qua biến môi trường `LD_LIBRARY_PATH`.
+The script downloads `.deb` files directly from Ubuntu 20.04 archives (old-releases, security, azure mirror), extracts them, and takes only the `.so*` (shared object / dynamic library) files. These files are placed in the `legacy_libs/` directory and loaded via the `LD_LIBRARY_PATH` environment variable.
 
-### Danh sách thư viện vá
+### Patched libraries
 
-| Thư viện | File .deb nguồn | Ghi chú |
-|-----------|----------------|---------|
+| Library | Source .deb file | Notes |
+|---------|-----------------|-------|
 | `libaom0` | `aom_1.0.0.errata1-3build1_amd64.deb` | AV1 codec |
 | `libvpx6` | `libvpx6_1.8.2-1ubuntu0.4_amd64.deb` | VP8/VP9 codec |
 | `libx264-155` | `x264_0.155.2917+git0a84d98-2_amd64.deb` | H.264 codec |
 | `libx265-179` | `x265_3.2.1-1build1_amd64.deb` | H.265 codec |
-| `libflite1` | `flite_2.1-release-3_amd64.deb` | Text-to-speech (phụ thuộc của ffmpeg cũ) |
+| `libflite1` | `flite_2.1-release-3_amd64.deb` | Text-to-speech (older ffmpeg dependency) |
 | `libwavpack1` | `wavpack_5.2.0-1ubuntu0.1_amd64.deb` | Audio codec |
 | `libwebp6` | `libwebp_0.6.1-2ubuntu0.20.04.3_amd64.deb` | WebP codec |
 | `libcodec2-0.9` | `codec2_0.9.2-2_amd64.deb` | Codec2 codec |
 
-### Cách hoạt động (dòng 37-48)
+### How it works (lines 37-48)
 
 ```bash
 for pkg in "${!DEBS[@]}"; do
     if [ ! -f "${pkg}.so" ]; then
-        # Tải .deb từ URL
+        # Download .deb from URL
         curl -L -o "$pkg.deb" "${DEBS[$pkg]}"
-        # Giải nén .deb (không cài đặt, chỉ giải nén)
+        # Extract .deb (do not install, just extract)
         dpkg -x "$pkg.deb" .
-        # Tìm file .so và đưa ra thư mục gốc libs
+        # Find .so files and move to root libs directory
         find usr/lib/x86_64-linux-gnu/ -name "*.so*" -exec mv {} . \;
         rm -rf usr/ "$pkg.deb"
     else
-        echo "✅ $pkg đã tồn tại trên Drive, bỏ qua."
+        echo "✅ $pkg already exists on Drive, skipping."
     fi
 done
 ```
 
-Mỗi lần chạy, script kiểm tra xem file `.so` đã tồn tại trong `legacy_libs/` chưa. Nếu có (do đã tải từ phiên trước và lưu trên Drive), nó bỏ qua bước tải. Điều này giúp **tiết kiệm thời gian và băng thông** ở các lần chạy sau.
+Each run, the script checks whether the `.so` file already exists in `legacy_libs/`. If it does (saved from a previous session on Drive), it skips the download. This **saves time and bandwidth** on subsequent runs.
 
 ---
 
-## Bước 3: Cài đặt thư viện Python (dòng 53)
+## Step 3: Install Python libraries (line 53)
 
 ```bash
 pip install watchdog google-api-python-client google-auth-oauthlib google-auth httplib2 opencv-python psutil Pillow
 ```
 
-Các thư viện này phục vụ cho:
+These libraries serve the following purposes:
 
-| Thư viện | Vai trò |
-|-----------|---------|
-| `watchdog` | Theo dõi thay đổi thư mục (tự động xử lý khi có video mới) |
-| `google-api-python-client` | Gọi Google Drive API để lưu kết quả OCR |
-| `google-auth-oauthlib`, `google-auth` | Xác thực với Google Drive thông qua OAuth2 |
-| `httplib2` | HTTP client (phụ thuộc của Google API client) |
-| `opencv-python` | Xử lý ảnh (OCR frame từ video) |
-| `psutil` | Giám sát tài nguyên hệ thống (CPU, RAM) |
-| `Pillow` | Thao tác với ảnh (PIL fork) |
+| Library | Role |
+|---------|------|
+| `watchdog` | Monitor directory changes (auto-process when new videos are added) |
+| `google-api-python-client` | Call Google Drive API to save OCR results |
+| `google-auth-oauthlib`, `google-auth` | Authenticate with Google Drive via OAuth2 |
+| `httplib2` | HTTP client (Google API client dependency) |
+| `opencv-python` | Image processing (OCR frames from video) |
+| `psutil` | System resource monitoring (CPU, RAM) |
+| `Pillow` | Image manipulation (PIL fork) |
 
 ---
 
-## Bước 4: Kiểm tra và tải VideoSubFinder (dòng 55-67)
+## Step 4: Download and verify VideoSubFinder (lines 55-67)
 
 ```bash
 if [ ! -f "$VSF_DIR/VideoSubFinderWXW" ]; then
@@ -126,17 +126,17 @@ if [ ! -f "$VSF_DIR/VideoSubFinderWXW" ]; then
 fi
 ```
 
-### Mục đích
+### Purpose
 
-VideoSubFinder là binary ~500MB (đã build sẵn), không thể đưa vào git repository. Script tải nó từ GitHub Releases về thư mục `VideoSubFinder/` bên cạnh thư mục `autovsf-colab/`.
+VideoSubFinder is a ~500MB pre-built binary that cannot be included in the git repository. The script downloads it from GitHub Releases into the `VideoSubFinder/` directory next to `autovsf-colab/`.
 
-### Cơ chế cache trên Drive
+### Drive caching mechanism
 
-Script kiểm tra sự tồn tại của binary trước khi tải. Vì thư mục `VideoSubFinder/` nằm trên Google Drive (đã mount), **chỉ tải một lần duy nhất**, các phiên Colab sau sẽ dùng lại mà không cần tải lại.
+The script checks for the binary's existence before downloading. Since the `VideoSubFinder/` directory resides on Google Drive (mounted), **it is downloaded only once**; subsequent Colab sessions reuse it without re-downloading.
 
 ---
 
-## Bước 5: Tạo wrapper script (dòng 70-81)
+## Step 5: Create the wrapper script (lines 70-81)
 
 ```bash
 cat <<EOF > "$VSF_DIR/VideoSubFinderWXW.run"
@@ -150,40 +150,40 @@ fi
 EOF
 ```
 
-### Tại sao cần wrapper?
+### Why a wrapper?
 
-Wrapper này giải quyết **2 vấn đề** cùng lúc:
+This wrapper solves **2 problems** simultaneously:
 
-1. **Vá thư viện cũ:** Thiết lập `LD_LIBRARY_PATH` trỏ tới `legacy_libs/` để nạp các thư viện Ubuntu 20.04 trước, cho phép VideoSubFinder tìm đúng phiên bản cũ khi khởi động.
+1. **Legacy library injection:** Sets `LD_LIBRARY_PATH` pointing to `legacy_libs/` to load Ubuntu 20.04 libraries first, allowing VideoSubFinder to find the correct older versions at startup.
 
-2. **Chạy headless:** Nếu biến môi trường `$DISPLAY` không tồn tại (đúng như trên Colab — không có màn hình vật lý), nó tự động dùng `xvfb-run` để tạo màn hình ảo và chạy VideoSubFinder bên trong.
+2. **Headless execution:** If the `$DISPLAY` environment variable does not exist (as on Colab — no physical display), it automatically uses `xvfb-run` to create a virtual display and run VideoSubFinder inside it.
 
 ---
 
-## Tổng kết luồng hoạt động
+## Summary of the execution flow
 
 ```
 install.sh
 │
-├── [1] apt-get install → xvfb, ffmpeg, thư viện hệ thống
+├── [1] apt-get install → xvfb, ffmpeg, system libraries
 │
-├── [2] Tải & giải nén legacy .deb → lấy file .so
-│     (chỉ tải nếu chưa có trên Drive)
+├── [2] Download & extract legacy .deb → get .so files
+│     (only downloads if not already on Drive)
 │
-├── [3] pip install → thư viện Python
+├── [3] pip install → Python libraries
 │
-├── [4] Tải VideoSubFinder binary
-│     (chỉ tải nếu chưa có trên Drive)
+├── [4] Download VideoSubFinder binary
+│     (only downloads if not already on Drive)
 │
-└── [5] Tạo VideoSubFinderWXW.run
+└── [5] Create VideoSubFinderWXW.run
       → wrapper: LD_LIBRARY_PATH + xvfb-run
 ```
 
-## Tóm tắt
+## Conclusion
 
-`install.sh` biến một Google Colab VM trần thành môi trường hoàn chỉnh để chạy VideoSubFinder, bằng cách:
+`install.sh` transforms a bare Google Colab VM into a complete environment for running VideoSubFinder by:
 
-- Cài đặt các gói hệ thống cần thiết (buộc phải làm lại mỗi phiên)
-- Vá các thư viện cũ không tương thích giữa Ubuntu 20.04 (nơi VSF được build) và Ubuntu 22.04 (Colab)
-- Tải và cấu hình binary VideoSubFinder (được cache trên Drive)
-- Tạo wrapper tự động xử lý cả vấn đề thư viện và màn hình ảo
+- Installing necessary system packages (must be done every session)
+- Patching incompatible legacy libraries between Ubuntu 20.04 (where VSF was built) and Ubuntu 22.04 (Colab)
+- Downloading and configuring the VideoSubFinder binary (cached on Drive)
+- Creating a wrapper that handles both library compatibility and virtual display

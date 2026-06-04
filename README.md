@@ -24,3 +24,6 @@ Automated hard subtitle (hardsub) extraction tool using VideoSubFinder and Googl
 ## ⚠️ Notes
 - Always keep your `credentials.json` file secure.
 - After processing, clean up temporary image folders to avoid filling up your Drive quota.
+
+## 📚 Docs
+- [install.sh Explanation](docs/install-explanation.md)
