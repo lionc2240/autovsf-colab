@@ -1,6 +1,6 @@
 # AutoVSF - Google Colab Edition
 
-> 🌐 **[Tiếng Việt](docs/VIE_README.md)**
+> 🌐 **[Tiếng Việt](docs/VIE_README.md)** | **[中文](docs/CN_README.md)**
 
 Automated hard subtitle (hardsub) extraction tool using VideoSubFinder and Google Drive OCR. This edition is specifically optimized to run persistently on Google Drive.
 
@@ -15,6 +15,12 @@ Automated hard subtitle (hardsub) extraction tool using VideoSubFinder and Googl
 3. **Configure:** Upload your `credentials.json` file to the `AutoVSF/autovsf-colab/` folder on Drive.
 4. **Run Setup:** Execute the setup cell. The script will automatically fix library compatibility issues for Ubuntu 22.04.
 5. **Extract:** Enter the video path and start processing.
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="images/autovsf-colab_ocr.jpg" width="55%" alt="AutoVSF Colab OCR">
+</p>
 
 ## 🌟 Colab Edition Advantages
 - **No data loss:** The entire tool and all results are saved on Drive.

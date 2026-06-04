@@ -14,6 +14,12 @@ Công cụ trích xuất phụ đề cứng (Hardsub) tự động thông qua Vi
 4. **Chạy Setup:** Chạy Cell cài đặt. Script sẽ tự động vá lỗi thư viện cho Ubuntu 22.04.
 5. **Trích xuất:** Nhập đường dẫn video và bắt đầu chạy.
 
+## 📸 Ảnh chụp màn hình
+
+<p align="center">
+  <img src="../images/autovsf-colab_ocr.jpg" width="55%" alt="AutoVSF Colab OCR">
+</p>
+
 ## 🌟 Ưu điểm của bản Colab
 - **Không mất dữ liệu:** Toàn bộ tool và kết quả được lưu trên Drive.
 - **Tiết kiệm thời gian:** Chỉ tải VideoSubFinder một lần duy nhất.
