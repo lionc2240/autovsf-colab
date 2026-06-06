@@ -7,20 +7,29 @@ import ocr
 def log(msg):
     print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {msg}")
 
-def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_dir=None):
+def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_dir=None, skip_if_exists=False):
     video = os.path.abspath(video_path)
     if not os.path.isfile(video):
         print(f"❌ Video file not found: {video}")
         return
 
     # 1. Determine output paths
-    # If on Colab and no output_dir specified, use /content for speed and to save Drive space
     if output_dir is None:
         if os.path.exists("/content"):
             output_dir = os.path.join("/content", Path(video).stem + "_out")
         else:
             output_dir = str(Path(video).parent / (Path(video).stem + "_out"))
     
+    rgb_dir = os.path.join(output_dir, "RGBImages")
+    
+    # Check for existing images if skip_if_exists is True
+    should_run_vsf = True
+    if skip_if_exists and os.path.exists(rgb_dir):
+        img_count = len([f for f in os.listdir(rgb_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp'))])
+        if img_count > 0:
+            log(f"♻️ Found {img_count} existing images in {rgb_dir}. Skipping VideoSubFinder scan.")
+            should_run_vsf = False
+
     # Final SRT always stays near the video on Drive by default
     srt_out = str(Path(video).with_suffix('.srt'))
 
@@ -28,34 +37,33 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
     cfg = C.load()
     vsf = cfg["vsf_path"]
     
-    log(f"🚀 Starting video scan: {Path(video).name}")
-    log(f"📂 Output directory (temporary): {output_dir}")
-    log(f"📝 Final SRT will be saved at: {srt_out}")
-    log(f"✂️  Scan area (Crop): top={top}, bottom={bottom}, left={left}, right={right}")
+    if should_run_vsf:
+        log(f"🚀 Starting video scan: {Path(video).name}")
+        log(f"📂 Output directory: {output_dir}")
+        log(f"📝 Final SRT will be saved at: {srt_out}")
+        log(f"✂️  Scan area (Crop): top={top}, bottom={bottom}, left={left}, right={right}")
 
-    cmd = [
-        vsf,
-        "-c", "-r", 
-        "-i", video,
-        "-o", output_dir,
-        "-te", str(top),
-        "-be", str(bottom),
-        "-le", str(left),
-        "-re", str(right)
-    ]
+        cmd = [
+            vsf,
+            "-c", "-r", 
+            "-i", video,
+            "-o", output_dir,
+            "-te", str(top),
+            "-be", str(bottom),
+            "-le", str(left),
+            "-re", str(right)
+        ]
 
-    # VideoSubFinder.run already has xvfb-run wrapped internally
-    vsf_dir = os.path.dirname(vsf)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir, exist_ok=True)
+        # VideoSubFinder.run already has xvfb-run wrapped internally
+        vsf_dir = os.path.dirname(vsf)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
 
-    proc = subprocess.Popen(cmd, cwd=vsf_dir)
-    proc.wait()
-    log("✅ Video scan complete.")
-
-    # 2. Run OCR
-    rgb_dir = os.path.join(output_dir, "RGBImages")
+        proc = subprocess.Popen(cmd, cwd=vsf_dir)
+        proc.wait()
+        log("✅ Video scan complete.")
     
+    # 2. Run OCR
     if not os.path.exists(rgb_dir):
         print(f"❌ Images folder not found: {rgb_dir}")
         return
@@ -78,7 +86,7 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
 
     # Keep script running until OCR is done
     while True:
-        if C.state.done >= C.state.total and C.state.total > 0:
+        if C.state.total > 0 and C.state.done >= C.state.total:
             time.sleep(2) # Wait for file write
             break
         if C.state.stop_event.is_set():
@@ -93,7 +101,9 @@ if __name__ == "__main__":
     parser.add_argument("--left", type=float, default=0.0, help="Left crop (0.0-1.0)")
     parser.add_argument("--right", type=float, default=1.0, help="Right crop (0.0-1.0)")
     parser.add_argument("--output", help="Temporary output directory for images")
+    parser.add_argument("--skip", action="store_true", help="Skip VideoSubFinder if images already exist")
 
     args = parser.parse_args()
     
-    run_headless(args.video, args.top, args.bottom, args.left, args.right, args.output)
+    run_headless(args.video, args.top, args.bottom, args.left, args.right, args.output, args.skip)
+
