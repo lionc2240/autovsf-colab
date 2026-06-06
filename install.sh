@@ -1,28 +1,28 @@
 #!/bin/bash
-# install_colab.sh - Tối ưu cho Google Colab (Ubuntu 22.04 Jammy)
+# install_colab.sh - Optimized for Google Colab (Ubuntu 22.04 Jammy)
 
 set -e
 
-# Xác định thư mục
+# Define directories
 REPO_DIR=$(pwd)
-# Trong Colab, REPO_DIR thường là /content/drive/MyDrive/AutoVSF/autovsf-colab
+# In Colab, REPO_DIR is usually /content/drive/MyDrive/AutoVSF/autovsf-colab
 PARENT_DIR=$(dirname "$REPO_DIR")
 VSF_DIR="$PARENT_DIR/VideoSubFinder"
 LIBS_DIR="$VSF_DIR/legacy_libs"
 
-echo "🌍 Môi trường: Google Colab (Ubuntu 22.04 Jammy)"
-echo "📂 Thư mục làm việc: $REPO_DIR"
+echo "🌍 Environment: Google Colab (Ubuntu 22.04 Jammy)"
+echo "📂 Working directory: $REPO_DIR"
 
-echo "🚀 [1/4] Cài đặt công cụ hệ thống (Bắt buộc mỗi lần chạy)..."
+echo "🚀 [1/4] Installing system tools (Required on every run)..."
 sudo apt-get update -y || true
 sudo apt-get install -y xvfb libxss1 libnss3 ffmpeg libxtst6 libxrender1 libxcomposite1 libasound2 libdbus-glib-1-2 libnuma1 libgtk-3-0
 
-# Xử lý thư viện cũ (VSF build cho Ubuntu 20.04 cần các bản lib cũ hơn)
-echo "🚀 [2/4] Kiểm tra và vá lỗi thư viện cũ (Legacy Libs)..."
+# Handle legacy libraries (VSF build for Ubuntu 20.04 requires older libs)
+echo "🚀 [2/4] Checking and patching legacy libraries..."
 mkdir -p "$LIBS_DIR"
 cd "$LIBS_DIR"
 
-# Danh sách các thư viện thiếu hụt trên Ubuntu 22.04
+# List of missing libraries on Ubuntu 22.04
 declare -A DEBS=(
     ["libaom0"]="https://archive.ubuntu.com/ubuntu/pool/universe/a/aom/libaom0_1.0.0.errata1-3build1_amd64.deb"
     ["libvpx6"]="http://azure.archive.ubuntu.com/ubuntu/pool/main/libv/libvpx/libvpx6_1.8.2-1ubuntu0.4_amd64.deb"
@@ -36,40 +36,40 @@ declare -A DEBS=(
 
 for pkg in "${!DEBS[@]}"; do
     if [ ! -f "${pkg}.so" ]; then
-        echo "📥 Đang tải $pkg..."
+        echo "📥 Downloading $pkg..."
         curl -L -o "$pkg.deb" "${DEBS[$pkg]}"
         dpkg -x "$pkg.deb" .
-        # Tìm và đưa các file .so ra thư mục gốc libs
+        # Move .so files to libs root
         find usr/lib/x86_64-linux-gnu/ -name "*.so*" -exec mv {} . \; || true
         rm -rf usr/ "$pkg.deb"
     else
-        echo "✅ $pkg đã tồn tại trên Drive, bỏ qua."
+        echo "✅ $pkg already exists on Drive, skipping."
     fi
 done
 
 cd "$REPO_DIR"
 
-echo "🚀 [3/4] Cài đặt thư viện Python..."
+echo "🚀 [3/4] Installing Python libraries..."
 pip install watchdog google-api-python-client google-auth-oauthlib google-auth httplib2 opencv-python psutil Pillow
 
-echo "🚀 [4/4] Kiểm tra VideoSubFinder..."
+echo "🚀 [4/4] Checking VideoSubFinder..."
 VSF_LINK="https://github.com/lionc2240/autovsf-codespaces/releases/download/VideoSubFinder_6.10_ubu20.04.tar.xz/VideoSubFinder_6.10_ubu20.04.tar.xz"
 VSF_FILE="VideoSubFinder_6.10_ubu20.04.tar.xz"
 
 if [ ! -f "$VSF_DIR/VideoSubFinderWXW" ]; then
-    echo "📥 Đang tải VideoSubFinder (500MB)..."
+    echo "📥 Downloading VideoSubFinder (500MB)..."
     curl -L -o "$PARENT_DIR/$VSF_FILE" "$VSF_LINK"
     tar -xf "$PARENT_DIR/$VSF_FILE" -C "$PARENT_DIR/"
     rm "$PARENT_DIR/$VSF_FILE"
-    echo "✅ Đã tải xong VSF."
+    echo "✅ VSF download complete."
 else
-    echo "✅ VideoSubFinder đã tồn tại trên Drive, bỏ qua bước tải."
+    echo "✅ Already exists on Drive, skipping download."
 fi
 
-# Cấu hình file .run (Tự động nhận diện đường dẫn lib trên Drive)
+# Configure .run file (Automatically detect lib path on Drive)
 cat <<EOF > "$VSF_DIR/VideoSubFinderWXW.run"
 #!/bin/sh
-# Wrapper để nạp thư viện cũ từ Drive
+# Wrapper to load legacy libraries from Drive
 export LD_LIBRARY_PATH="$LIBS_DIR:\$PWD:\$LD_LIBRARY_PATH"
 if [ -z "\$DISPLAY" ]; then
     xvfb-run -a ./VideoSubFinderWXW "\$@"
@@ -82,6 +82,6 @@ chmod +x "$VSF_DIR/VideoSubFinderWXW" "$VSF_DIR/VideoSubFinderWXW.run"
 chmod +x headless.py ocr.py
 
 echo "==========================================================="
-echo "🎉 CÀI ĐẶT HOÀN TẤT CHO COLAB!"
-echo "🚀 Bây giờ bạn có thể chạy VideoSubFinder trên Google Drive."
+echo "🎉 INSTALLATION COMPLETE FOR COLAB!"
+echo "🚀 You can now run VideoSubFinder on Google Drive."
 echo "==========================================================="
