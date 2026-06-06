@@ -19,29 +19,29 @@ def get_credentials():
     tok_file  = C.token_file()
     
     if not os.path.exists(cred_file):
-        raise FileNotFoundError(f"Không tìm thấy file credentials tại: {cred_file}")
+        raise FileNotFoundError(f"Credentials file not found at: {cred_file}")
 
     creds = None
-    # Load token đã lưu nếu có
+    # Load saved token if available
     if os.path.exists(tok_file):
         creds = Credentials.from_authorized_user_file(tok_file, [C.SCOPES])
 
-    # Nếu token không hợp lệ hoặc chưa có, thực hiện đăng nhập mới
+    # If token is invalid or missing, perform new login
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             print("\n" + "="*70)
-            print("HƯỚNG DẪN XÁC THỰC CHO CODESPACES (CÁCH CHẮC CHẮN NHẤT):")
-            print("1. Nhấn vào đường link 'Auth URL' bên dưới để đăng nhập.")
-            print("2. Sau khi nhấn 'Allow', trình duyệt sẽ chuyển đến trang lỗi (localhost).")
-            print("3. BẠN HÃY COPY TOÀN BỘ ĐỊA CHỈ (URL) CỦA TRANG LỖI ĐÓ.")
-            print("   (Link sẽ có dạng: http://localhost:8080/?state=...&code=...)")
-            print("4. Dán cái link bạn vừa copy vào dòng 'Paste URL here' bên dưới.")
+            print("AUTHENTICATION GUIDE (STABLE METHOD):")
+            print("1. Click the 'Auth URL' link below to log in.")
+            print("2. After clicking 'Allow', the browser will show an error page (localhost).")
+            print("3. COPY THE ENTIRE URL OF THAT ERROR PAGE.")
+            print("   (Example: http://localhost:8080/?state=...&code=...)")
+            print("4. Paste the copied URL into the 'Paste URL here' prompt below.")
             print("="*70 + "\n")
 
             os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-            # Sử dụng một port cố định để Google dễ chấp nhận
+            # Use fixed port for consistency
             redirect_uri = 'http://localhost:8080/'
             flow = InstalledAppFlow.from_client_secrets_file(
                 cred_file, 
@@ -55,17 +55,17 @@ def get_credentials():
             print("\n")
             response_url = input("Paste URL here: ").strip()
             
-            # Khắc phục lỗi nếu người dùng dán link từ Codespaces thay vì localhost
+            # Fix URL if pasted from Codespaces environment
             if "github.dev" in response_url:
                 response_url = response_url.replace(response_url.split('/?')[0], "http://localhost:8080")
             
             flow.fetch_token(authorization_response=response_url)
             creds = flow.credentials
             
-        # Lưu token cho lần sau
+        # Save token for future use
         with open(tok_file, 'w') as token:
             token.write(creds.to_json())
-            print(f"\n[OK] Đã lưu token vào {tok_file}")
+            print(f"\n[OK] Token saved to {tok_file}")
             
     return creds
 
@@ -219,14 +219,14 @@ def _log_cli(msg):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Sử dụng: python3 ocr.py <thư_mục_ảnh> [file_srt_đầu_ra]")
+        print("Usage: python3 ocr.py <images_dir> [output_srt_file]")
         sys.exit(1)
     
     img_dir = sys.argv[1]
     srt_out = sys.argv[2] if len(sys.argv) > 2 else "output.srt"
     
-    def _prog(d, t): print(f"\r⏳ OCR: {d}/{t} ảnh", end="")
-    def _fin(p): print(f"\n✅ Xong! File: {p}")
+    def _prog(d, t): print(f"\r⏳ OCR: {d}/{t} images", end="")
+    def _fin(p): print(f"\n✅ Done! File: {p}")
 
     run(img_dir, srt_out, False, False, _log_cli, _prog, _fin)
     
@@ -240,3 +240,5 @@ if __name__ == "__main__":
             C.state.stop_event.set()
             break
         time.sleep(1)
+    time.sleep(1)
+ep(1)
