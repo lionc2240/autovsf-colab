@@ -4,7 +4,8 @@
 
 Automated hard subtitle (hardsub) extraction tool using VideoSubFinder and Google Drive OCR. This edition is specifically optimized to run persistently on Google Drive.
 
-🔗 **Main Edition (Codespaces):** [![GitHub](https://img.shields.io/badge/GitHub-View_on_GitHub-blue?logo=github)](https://github.com/lionc2240/autovsf-codespaces)
+🔗 **Main Edition (Windows):** [![GitHub](https://img.shields.io/badge/GitHub-View_on_GitHub-blue?logo=github)](https://github.com/lionc2240/autovsf)
+🔗 **Codespaces Edition:** [![GitHub](https://img.shields.io/badge/GitHub-View_on_GitHub-blue?logo=github)](https://github.com/lionc2240/autovsf-codespaces)
 🔗 **Colab Edition:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lionc2240/autovsf-colab/blob/main/AutoVSF_Colab_Edition.ipynb?hl=vi)
 
 ---

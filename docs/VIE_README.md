@@ -2,7 +2,8 @@
 
 Công cụ trích xuất phụ đề cứng (Hardsub) tự động thông qua VideoSubFinder và Google Drive OCR. Phiên bản này được tối ưu hóa đặc biệt để chạy bền vững trên Google Drive.
 
-🔗 **Phiên bản chính (Codespaces):** [![GitHub](https://img.shields.io/badge/GitHub-Xem_trên_GitHub-blue?logo=github)](https://github.com/lionc2240/autovsf-codespaces)
+🔗 **Phiên bản chính (Windows):** [![GitHub](https://img.shields.io/badge/GitHub-Xem_trên_GitHub-blue?logo=github)](https://github.com/lionc2240/autovsf)
+🔗 **Phiên bản Codespaces:** [![GitHub](https://img.shields.io/badge/GitHub-Xem_trên_GitHub-blue?logo=github)](https://github.com/lionc2240/autovsf-codespaces)
 🔗 **Phiên bản Colab:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lionc2240/autovsf-colab/blob/main/AutoVSF_Colab_Edition.ipynb?hl=vi)
 
 ---

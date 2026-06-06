@@ -4,7 +4,8 @@
 
 使用 VideoSubFinder 和 Google Drive OCR 自动提取硬字幕（hardsub）的工具。此版本专门优化以在 Google Drive 上持久运行。
 
-🔗 **主版本 (Codespaces)：** [![GitHub](https://img.shields.io/badge/GitHub-在_GitHub_上查看-blue?logo=github)](https://github.com/lionc2240/autovsf-codespaces)
+🔗 **主版本 (Windows)：** [![GitHub](https://img.shields.io/badge/GitHub-在_GitHub_上查看-blue?logo=github)](https://github.com/lionc2240/autovsf)
+🔗 **Codespaces 版：** [![GitHub](https://img.shields.io/badge/GitHub-在_GitHub_上查看-blue?logo=github)](https://github.com/lionc2240/autovsf-codespaces)
 🔗 **Colab 版：** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lionc2240/autovsf-colab/blob/main/AutoVSF_Colab_Edition.ipynb?hl=vi)
 
 ---
