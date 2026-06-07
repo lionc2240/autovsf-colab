@@ -41,6 +41,8 @@ class AppState:
     folder_id:   str = ""
     total:       int = 0
     done:        int = 0
+    scan_progress: float = 0.0
+    video_duration: float = 0.0
     t0:          Optional[float] = None
     observer:    object = None
 
@@ -48,6 +50,8 @@ class AppState:
         self.stop_event.clear()
         self.srt_entries.clear()
         self.total = self.done = 0
+        self.scan_progress = 0.0
+        self.video_duration = 0.0
         self.t0 = None
 
 state = AppState()

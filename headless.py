@@ -1,4 +1,4 @@
-import sys, os, time, datetime, argparse
+import sys, os, time, datetime, argparse, re
 from pathlib import Path
 import subprocess
 import config as C
@@ -6,6 +6,17 @@ import ocr
 
 def log(msg):
     print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {msg}")
+
+def get_video_duration(video_path):
+    try:
+        cmd = [
+            "ffprobe", "-v", "error", "-show_entries", "format=duration", 
+            "-of", "default=noprint_wrappers=1:nokey=1", video_path
+        ]
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        return float(result.stdout.strip())
+    except:
+        return 0.0
 
 def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_dir=None, skip_if_exists=False):
     video = os.path.abspath(video_path)
@@ -33,6 +44,11 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
     # Final SRT always stays near the video on Drive by default
     srt_out = str(Path(video).with_suffix('.srt'))
 
+    # Reset state for new run
+    C.state.reset()
+    C.state.video_duration = get_video_duration(video)
+    C.state.t0 = time.time()
+
     # 1. Run VideoSubFinder
     cfg = C.load()
     vsf = cfg["vsf_path"]
@@ -59,8 +75,16 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
         if not os.path.exists(output_dir):
             os.makedirs(output_dir, exist_ok=True)
 
-        proc = subprocess.Popen(cmd, cwd=vsf_dir)
-        proc.wait()
+        # Parse progress from stdout
+        progress_re = re.compile(r'(\d+)\s*%')
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=vsf_dir) as proc:
+            for line in proc.stdout:
+                # print(line, end="") # Optional: log all VSF output
+                match = progress_re.search(line)
+                if match:
+                    C.state.scan_progress = float(match.group(1))
+            proc.wait()
+        
         log("✅ Video scan complete.")
     
     # 2. Run OCR
@@ -69,15 +93,13 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
         return
 
     log(f"⚡ Starting OCR in: {rgb_dir}")
+    C.state.t0 = time.time() # Reset t0 for Phase 2 accuracy
     
     def on_progress(done, total):
         print(f"\r⏳ OCR Progress: {done}/{total} images", end="")
 
     def on_finish(path):
         print(f"\n✅ Success! Subtitle file: {path}")
-
-    # Reset state for new run
-    C.state.reset()
 
     ocr.run(rgb_dir, srt_out, 
             cfg.get("delete_raw_texts", False), 
