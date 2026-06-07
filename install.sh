@@ -72,9 +72,9 @@ else
     echo "✅ Already exists on Drive, skipping download."
 fi
 
-# Configure .run file (Automatically detect lib path on Drive)
+# Configure .run file (Robust version)
 cat <<EOF > "$VSF_DIR/VideoSubFinderWXW.run"
-#!/bin/sh
+#!/bin/bash
 # Wrapper to load legacy libraries from Drive
 export LD_LIBRARY_PATH="$LIBS_DIR:\$PWD:\$LD_LIBRARY_PATH"
 if [ -z "\$DISPLAY" ]; then

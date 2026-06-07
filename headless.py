@@ -53,6 +53,12 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
     cfg = C.load()
     vsf = cfg["vsf_path"]
     
+    if not os.path.exists(vsf):
+        log(f"❌ VideoSubFinder binary not found at: {vsf}")
+        return
+
+    vsf_dir = os.path.dirname(vsf)
+    
     if should_run_vsf:
         log(f"🚀 Starting video scan: {Path(video).name}")
         log(f"📂 Output directory: {output_dir}")
@@ -64,31 +70,41 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
             "-c", "-r", 
             "-i", video,
             "-o", output_dir,
-            "-te", str(top),
-            "-be", str(bottom),
-            "-le", str(left),
-            "-re", str(right)
+            "-te", f"{top:.4f}",
+            "-be", f"{bottom:.4f}",
+            "-le", f"{left:.4f}",
+            "-re", f"{right:.4f}"
         ]
 
-        # VideoSubFinder.run already has xvfb-run wrapped internally
-        vsf_dir = os.path.dirname(vsf)
+        # Ensure output dir exists
         if not os.path.exists(output_dir):
             os.makedirs(output_dir, exist_ok=True)
+
+        log(f"💻 Running command: {' '.join(cmd)}")
+        log(f"📁 Working directory: {vsf_dir}")
 
         # Parse progress from stdout and log to console for debugging
         progress_re = re.compile(r'(\d+)\s*%')
         log("🔄 Launching VideoSubFinder...")
-        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=vsf_dir) as proc:
-            for line in proc.stdout:
-                line = line.strip()
-                if line:
-                    print(f"[VSF] {line}") # Log to Colab console
-                    match = progress_re.search(line)
-                    if match:
-                        C.state.scan_progress = float(match.group(1))
-            proc.wait()
-            if proc.returncode != 0:
-                log(f"❌ VideoSubFinder exited with code {proc.returncode}")
+        
+        try:
+            # Add execution permission just in case
+            os.chmod(vsf, 0o755)
+            
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=vsf_dir) as proc:
+                for line in proc.stdout:
+                    line = line.strip()
+                    if line:
+                        print(f"[VSF] {line}")
+                        match = progress_re.search(line)
+                        if match:
+                            C.state.scan_progress = float(match.group(1))
+                proc.wait()
+                if proc.returncode != 0:
+                    log(f"❌ VideoSubFinder exited with code {proc.returncode}")
+        except Exception as e:
+            log(f"❌ Failed to execute VideoSubFinder: {str(e)}")
+            return
         
         log("✅ Video scan finished.")
     
