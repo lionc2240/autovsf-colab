@@ -75,17 +75,22 @@ def run_headless(video_path, top=0.3, bottom=0.0, left=0.0, right=1.0, output_di
         if not os.path.exists(output_dir):
             os.makedirs(output_dir, exist_ok=True)
 
-        # Parse progress from stdout
+        # Parse progress from stdout and log to console for debugging
         progress_re = re.compile(r'(\d+)\s*%')
+        log("🔄 Launching VideoSubFinder...")
         with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=vsf_dir) as proc:
             for line in proc.stdout:
-                # print(line, end="") # Optional: log all VSF output
-                match = progress_re.search(line)
-                if match:
-                    C.state.scan_progress = float(match.group(1))
+                line = line.strip()
+                if line:
+                    print(f"[VSF] {line}") # Log to Colab console
+                    match = progress_re.search(line)
+                    if match:
+                        C.state.scan_progress = float(match.group(1))
             proc.wait()
+            if proc.returncode != 0:
+                log(f"❌ VideoSubFinder exited with code {proc.returncode}")
         
-        log("✅ Video scan complete.")
+        log("✅ Video scan finished.")
     
     # 2. Run OCR
     if not os.path.exists(rgb_dir):
