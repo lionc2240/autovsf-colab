@@ -3,6 +3,15 @@
 
 set -e
 
+# Khai báo các biến màu sắc
+RED='\e[31m'
+GREEN='\e[32m'
+YELLOW='\e[33m'
+BLUE='\e[34m'
+CYAN='\e[36m'
+BOLD='\e[1m'
+NC='\e[0m' # No Color
+
 # Define directories
 REPO_DIR=$(pwd)
 # In Colab, REPO_DIR is usually /content/drive/MyDrive/AutoVSF/autovsf-colab
@@ -10,24 +19,24 @@ PARENT_DIR=$(dirname "$REPO_DIR")
 VSF_DIR="$PARENT_DIR/VideoSubFinder"
 LIBS_DIR="$VSF_DIR/legacy_libs"
 
-echo "🌍 Environment: Google Colab (Ubuntu 22.04 Jammy)"
-echo "📂 Working directory: $REPO_DIR"
+echo -e "${CYAN}[INFO] Environment: Google Colab (Ubuntu 22.04 Jammy)${NC}"
+echo -e "${CYAN}[INFO] Working directory: $REPO_DIR${NC}"
 
-echo "🚀 [1/4] Installing system tools..."
+echo -e "${BLUE}${BOLD}[1/4] Installing system tools...${NC}"
 if command -v xvfb-run >/dev/null 2>&1; then
-    echo "✅ System tools already installed, skipping apt-get."
+    echo -e "${GREEN}[SUCCESS] System tools already installed, skipping apt-get.${NC}"
 else
     sudo apt-get update -y || true
     sudo apt-get install -y xvfb libxss1 libnss3 ffmpeg libxtst6 libxrender1 libxcomposite1 libasound2 libdbus-glib-1-2 libnuma1 libgtk-3-0
 fi
 
 # Handle legacy libraries (VSF build for Ubuntu 20.04 requires older libs)
-echo "🚀 [2/4] Checking and patching legacy libraries..."
+echo -e "${BLUE}${BOLD}[2/4] Checking and patching legacy libraries...${NC}"
 mkdir -p "$LIBS_DIR"
 cd "$LIBS_DIR"
 
 if [ -f ".libs_ready" ]; then
-    echo "✅ Legacy libraries already present and verified on Drive, skipping."
+    echo -e "${GREEN}[SUCCESS] Legacy libraries already present and verified on Drive, skipping.${NC}"
 else
     # List of missing libraries on Ubuntu 22.04
     declare -A DEBS=(
@@ -42,7 +51,7 @@ else
     )
 
     for pkg in "${!DEBS[@]}"; do
-        echo "📥 Downloading and extracting $pkg..."
+        echo -e "${YELLOW}[DOWNLOAD] Downloading and extracting $pkg...${NC}"
         curl -L -o "$pkg.deb" "${DEBS[$pkg]}"
         dpkg -x "$pkg.deb" .
         # Move .so files to libs root
@@ -50,26 +59,26 @@ else
         rm -rf usr/ "$pkg.deb"
     done
     touch .libs_ready
-    echo "✅ Legacy libraries installation complete."
+    echo -e "${GREEN}[SUCCESS] Legacy libraries installation complete.${NC}"
 fi
 
 cd "$REPO_DIR"
 
-echo "🚀 [3/4] Installing Python libraries..."
+echo -e "${BLUE}${BOLD}[3/4] Installing Python libraries...${NC}"
 pip install --quiet --no-cache-dir watchdog google-api-python-client google-auth-oauthlib google-auth httplib2 opencv-python psutil Pillow
 
-echo "🚀 [4/4] Checking VideoSubFinder..."
+echo -e "${BLUE}${BOLD}[4/4] Checking VideoSubFinder...${NC}"
 VSF_LINK="https://github.com/lionc2240/autovsf-codespaces/releases/download/VideoSubFinder_6.10_ubu20.04.tar.xz/VideoSubFinder_6.10_ubu20.04.tar.xz"
 VSF_FILE="VideoSubFinder_6.10_ubu20.04.tar.xz"
 
 if [ ! -f "$VSF_DIR/VideoSubFinderWXW" ]; then
-    echo "📥 Downloading VideoSubFinder (500MB)..."
+    echo -e "${YELLOW}[DOWNLOAD] Downloading VideoSubFinder (500MB)...${NC}"
     curl -L -o "$PARENT_DIR/$VSF_FILE" "$VSF_LINK"
     tar -xf "$PARENT_DIR/$VSF_FILE" -C "$PARENT_DIR/"
     rm "$PARENT_DIR/$VSF_FILE"
-    echo "✅ VSF download complete."
+    echo -e "${GREEN}[SUCCESS] VSF download complete.${NC}"
 else
-    echo "✅ Already exists on Drive, skipping download."
+    echo -e "${GREEN}[SUCCESS] Already exists on Drive, skipping download.${NC}"
 fi
 
 # Configure .run file (Robust version)
@@ -87,7 +96,7 @@ EOF
 chmod +x "$VSF_DIR/VideoSubFinderWXW" "$VSF_DIR/VideoSubFinderWXW.run"
 chmod +x headless.py ocr.py
 
-echo "==========================================================="
-echo "🎉 INSTALLATION COMPLETE FOR COLAB!"
-echo "🚀 You can now run VideoSubFinder on Google Drive."
-echo "==========================================================="
+echo -e "${GREEN}==========================================================="
+echo -e "${BOLD}[SUCCESS] INSTALLATION COMPLETE FOR COLAB!"
+echo -e "You can now run VideoSubFinder on Google Drive."
+echo -e "===========================================================${NC}"
